@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高原动画封装取出bug版</title>
+    <style type="text/css">
+        .box1 {
+            margin: 0;
+            padding: 5px;
+            height: 200px;
+            background-color: #ddd;
+            position: relative;
+        }
+        .box2{
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+            position:absolute;
+            left: 0px;
+            border: 1px solid #000;
+            margin-top:10px;
+        }
+        button{
+            cursor:pointer;
+        }
+
+    </style>
+</head>
+<body>
+<div class="box1">
+    <button>运动到200</button>
+    <button>运动到400</button>
+    <div class="box2"></div>
+</div>
+<script type="text/javascript">
+    //需求：当盒子移动到目标位置时，停止移动。
+    //思路：设置定时器，按步长移动，当left=目标位置时，清除定时器，停止移动。
+    //步骤：获取相关元素，btn和div
+    var btn = document.getElementsByTagName("button");
+    var box2 = document.getElementsByClassName("box2")[0];
+    //绑定事件
+    btn[0].onclick = function(){
+        animate(200);
+    };
+    btn[1].onclick = function(){
+        animate(400);
+    };
+    function animate(target){
+        var timer = null;
+        //bug1：每次点击一次事件，都会出发一次定时器，造成移动速度越来越快。
+        // 解决方法：需要每次触发事件前先清除以前定时器。
+        clearInterval(timer);
+        var speed = box2.offsetLeft<target?10:-10;
+        timer = setInterval(function(){
+            //bug2:无法返回，当前值超过目标值时，应该往前移动
+            //解决方法：当left<target speed=10;当left>target speed=10;
+            var val = target - box2.offsetLeft;
+            box2.style.left = box2.offsetLeft+speed+"px";
+            //bug3:left=target时，在点击，出现抖动
+            //设置定时器，设置移动方式，当left=target时，清理定时器
+            //当val=target-left<0时，直接赋值目标位置，且清除定时器。注意点：val定义一定要在移动设置前，要不然val值不恒定
+            if(Math.abs(val)<Math.abs(speed)){
+                box2.style.left = target+"px";
+                clearInterval(timer);
+            }
+        },30)
+    };
+
+</script>
+</body>
+</html>
